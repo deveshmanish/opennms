@@ -17,6 +17,8 @@ JAVA_OPTS="-Xmx2g"
 
 export PATH CONTAINERDIR JAVA_OPTS
 
+REBUILD_PREREQUISITES="org.opennms.karaf:opennms,:org.opennms.container.karaf,:org.opennms.container.shared"
+
 cleanup_and_build() {
   should_use_sudo=$1
 
@@ -44,6 +46,7 @@ cleanup_and_build() {
   $cmd_prefix rm -rf "${CONTAINERDIR}"/target/minion-karaf-*
 
   # Rebuild - we've already verified that we're in the right folder
+  (cd ../..; compile.pl -DskipTests --projects "${REBUILD_PREREQUISITES}" install) && \
   compile.pl -DskipTests clean install && \
     (cd "${CONTAINERDIR}"; compile.pl -DskipTests clean install)
 }
