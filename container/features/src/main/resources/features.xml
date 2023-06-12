@@ -353,12 +353,20 @@
         <bundle>mvn:org.opennms/opennms-util/${project.version}</bundle>
     </feature>
 
-    <feature name="opennms-core" version="${project.version}" description="OpenNMS :: Core">
+    <feature name="opennms-core-soa" version="${project.version}" description="OpenNMS :: Core :: Service Registry">
         <feature version="[4.2,4.3)">spring</feature>
         <feature version="[4.2,4.3)">spring-orm</feature>
+        <!-- start the bridge and the things it depends on early -->
+        <bundle dependency="true" start-level="30">mvn:org.opennms.core/org.opennms.core.soa/${project.version}</bundle>
+        <bundle dependency="true" start-level="30">mvn:org.opennms.core/org.opennms.core.spring/${project.version}</bundle>
+        <bundle dependency="true" start-level="30">mvn:org.opennms.core/org.opennms.core.sysprops/${project.version}</bundle>
+    </feature>
+
+    <feature name="opennms-core" version="${project.version}" description="OpenNMS :: Core">
         <feature>commons-io</feature>
         <feature>dnsjava</feature>
         <feature>jaxb</feature>
+        <feature>opennms-core-soa</feature>
         <feature>opennms-util</feature>
         <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.javax-inject/1_3</bundle>
         <bundle dependency="true">mvn:org.codehaus.jackson/jackson-core-asl/${jacksonVersion}</bundle>
@@ -369,9 +377,6 @@
         <bundle>mvn:org.opennms.core/org.opennms.core.criteria/${project.version}</bundle>
         <bundle>mvn:org.opennms.core/org.opennms.core.lib/${project.version}</bundle>
         <bundle>mvn:org.opennms.core/org.opennms.core.logging/${project.version}</bundle>
-        <bundle>mvn:org.opennms.core/org.opennms.core.soa/${project.version}</bundle>
-        <bundle>mvn:org.opennms.core/org.opennms.core.spring/${project.version}</bundle>
-        <bundle>mvn:org.opennms.core/org.opennms.core.sysprops/${project.version}</bundle>
         <bundle>mvn:org.opennms.core/org.opennms.core.xml/${project.version}</bundle>
     </feature>
     <feature name="opennms-core-camel" version="${project.version}" description="OpenNMS :: Core :: Camel">
@@ -1161,10 +1166,9 @@
         <feature version="[4.2,4.3)">spring-jms</feature>
         <feature version="[4.2,4.3)">spring-tx</feature>
         <feature version="${guavaOsgiVersion}">guava</feature>
-        <bundle dependency="true">mvn:org.opennms.core/org.opennms.core.soa/${project.version}</bundle>
-        <bundle dependency="true">mvn:org.opennms.core/org.opennms.core.sysprops/${project.version}</bundle>
-        <bundle>mvn:org.opennms.container/spring-extender/${project.version}</bundle>
-        <bundle>mvn:org.opennms.features.distributed/org.opennms.features.distributed.serviceregistry/${project.version}</bundle>
+        <feature prerequisite="true">opennms-core-soa</feature>
+        <bundle start-level="40">mvn:org.opennms.container/spring-extender/${project.version}</bundle>
+        <bundle start-level="40">mvn:org.opennms.features.distributed/org.opennms.features.distributed.serviceregistry/${project.version}</bundle>
     </feature>
     <feature name="opennms-flows" version="${project.version}" description="OpenNMS :: Features :: Flows :: Feature Definition">
         <details>Feature definition to start all required bundles related to *flow-support.</details>
