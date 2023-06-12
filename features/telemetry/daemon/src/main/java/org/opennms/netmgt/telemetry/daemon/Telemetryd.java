@@ -1,8 +1,8 @@
 /*******************************************************************************
  * This file is part of OpenNMS(R).
  *
- * Copyright (C) 2017-2022 The OpenNMS Group, Inc.
- * OpenNMS(R) is Copyright (C) 1999-2022 The OpenNMS Group, Inc.
+ * Copyright (C) 2017-2023 The OpenNMS Group, Inc.
+ * OpenNMS(R) is Copyright (C) 1999-2023 The OpenNMS Group, Inc.
  *
  * OpenNMS(R) is a registered trademark of The OpenNMS Group, Inc.
  *
@@ -28,6 +28,7 @@
 
 package org.opennms.netmgt.telemetry.daemon;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -38,22 +39,27 @@ import java.util.stream.Collectors;
 import org.opennms.core.ipc.sink.api.AsyncDispatcher;
 import org.opennms.core.ipc.sink.api.MessageConsumerManager;
 import org.opennms.core.ipc.sink.api.MessageDispatcherFactory;
+import org.opennms.core.soa.lookup.ServiceLookup;
+import org.opennms.core.soa.lookup.ServiceLookupBuilder;
+import org.opennms.core.soa.lookup.ServiceRegistryLookup;
+import org.opennms.core.soa.support.DefaultServiceRegistry;
 import org.opennms.core.sysprops.SystemProperties;
-import org.opennms.netmgt.events.api.model.IEvent;
-import org.opennms.netmgt.telemetry.api.TelemetryManager;
-import org.opennms.netmgt.telemetry.api.receiver.GracefulShutdownListener;
-import org.opennms.netmgt.telemetry.api.registry.TelemetryRegistry;
 import org.opennms.netmgt.daemon.DaemonTools;
 import org.opennms.netmgt.daemon.SpringServiceDaemon;
 import org.opennms.netmgt.events.api.EventConstants;
 import org.opennms.netmgt.events.api.annotations.EventHandler;
 import org.opennms.netmgt.events.api.annotations.EventListener;
+import org.opennms.netmgt.events.api.model.IEvent;
+import org.opennms.netmgt.telemetry.api.TelemetryManager;
 import org.opennms.netmgt.telemetry.api.adapter.Adapter;
+import org.opennms.netmgt.telemetry.api.receiver.GracefulShutdownListener;
 import org.opennms.netmgt.telemetry.api.receiver.Listener;
 import org.opennms.netmgt.telemetry.api.receiver.TelemetryMessage;
+import org.opennms.netmgt.telemetry.api.registry.TelemetryRegistry;
 import org.opennms.netmgt.telemetry.common.ipc.TelemetrySinkModule;
 import org.opennms.netmgt.telemetry.config.dao.TelemetrydConfigDao;
 import org.opennms.netmgt.telemetry.config.model.AdapterConfig;
+import org.opennms.netmgt.telemetry.config.model.ConnectorConfig;
 import org.opennms.netmgt.telemetry.config.model.ListenerConfig;
 import org.opennms.netmgt.telemetry.config.model.QueueConfig;
 import org.opennms.netmgt.telemetry.config.model.TelemetrydConfig;
@@ -99,16 +105,44 @@ public class Telemetryd implements SpringServiceDaemon, TelemetryManager {
     private List<TelemetryMessageConsumer> consumers = new ArrayList<>();
     private List<Listener> listeners = new ArrayList<>();
 
+    private ServiceLookup<Class<?>, String> serviceLookup = new ServiceLookupBuilder(new ServiceRegistryLookup(DefaultServiceRegistry.INSTANCE))
+            .blocking(
+                    Duration.ofSeconds(30).toMillis(), // grace period
+                    Duration.ofSeconds(5).toMillis(), // wait time
+                    Duration.ofSeconds(60).toMillis() // blocking wait time
+            ).build();
+
     @Override
     public synchronized void start() throws Exception {
-        if (consumers.size() > 0) {
+        if (!consumers.isEmpty()) {
             throw new IllegalStateException(NAME + " is already started.");
         }
         LOG.info("{} is starting.", NAME);
         final TelemetrydConfig config = telemetrydConfigDao.getContainer().getObject();
         final AutowireCapableBeanFactory beanFactory = applicationContext.getAutowireCapableBeanFactory();
 
-        // First we create the queues as parsers may reference them
+        final List<String> classes = new ArrayList<>();
+        classes.addAll(config.getConnectors().stream().map(ConnectorConfig::getClassName).collect(Collectors.toList()));
+        classes.addAll(config.getListeners().stream().map(ListenerConfig::getClassName).collect(Collectors.toList()));
+        classes.addAll(config.getQueues().stream().flatMap(q -> q.getAdapters().stream().map(AdapterConfig::getClassName)).collect(Collectors.toList()));
+
+        // First, we make sure enough of Karaf has come up that we can find all our beans
+        // this is an ugly hack, but in mixed JVM+Karaf mode, we have a fun race condition in Telemetryd coming up
+        // it will block until the class is available, and then after that everything sould be up quickly
+        LOG.info("Waiting for {} adapter dependencies...", classes.size());
+        for (final String className : classes) {
+            LOG.debug("Waiting for {} in the service registry.", className);
+            try {
+                final Class<?> c = Class.forName(className);
+                final Object o = serviceLookup.lookup(c, null);
+                LOG.debug("Found {} class: {}", className, o);
+            } catch (final ClassNotFoundException e) {
+                // do we let this bubble up? probably won't start right if it's not found...
+                LOG.debug("Failed to look up class {} from the service registry. This is probably bad.", className);
+            }
+        }
+
+        // Then, we create the queues as parsers may reference them
         for (final QueueConfig queueConfig : config.getQueues()) {
             // Create a Sink module using the queue definition.
             // This allows for queue to have their respective queues and thread
@@ -299,5 +333,12 @@ public class Telemetryd implements SpringServiceDaemon, TelemetryManager {
         return this.consumers.stream()
                 .flatMap(consumer -> consumer.getAdapters().stream())
                 .collect(Collectors.toList());
+    }
+
+    public ServiceLookup<Class<?>, String> getServiceLookup() {
+        return this.serviceLookup;
+    }
+    public void setServiceLookup(final ServiceLookup<Class<?>, String> lookup) {
+        this.serviceLookup = lookup;
     }
 }

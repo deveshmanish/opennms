@@ -28,8 +28,8 @@
 
 package org.opennms.netmgt.telemetry.itests;
 
-import static org.awaitility.Awaitility.await;
 import static junit.framework.TestCase.fail;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
@@ -46,11 +46,13 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -59,6 +61,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.opennms.core.soa.lookup.ServiceLookupBuilder;
+import org.opennms.core.soa.lookup.ServiceRegistryLookup;
+import org.opennms.core.soa.support.DefaultServiceRegistry;
+import org.opennms.core.test.MockLogAppender;
+import org.opennms.core.test.MockLogger;
 import org.opennms.core.test.OpenNMSJUnit4ClassRunner;
 import org.opennms.core.test.db.MockDatabase;
 import org.opennms.core.test.db.annotations.JUnitTemporaryDatabase;
@@ -186,6 +193,17 @@ public class ThresholdingIT {
 
         // Resync after adding nodes/interfaces
         interfaceToNodeCache.dataSourceSync();
+
+        telemetryd.setServiceLookup(new ServiceLookupBuilder(new ServiceRegistryLookup(DefaultServiceRegistry.INSTANCE))
+            .blocking(
+                    1, // grace period
+                    1, // wait time
+                    1 // blocking wait time
+            ).build());
+
+        final Properties props = new Properties();
+        props.put(MockLogger.LOG_KEY_PREFIX + "org.opennms.netmgt.telemetry", "DEBUG");
+        MockLogAppender.setupLogging(props);
     }
 
     @Test
