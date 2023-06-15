@@ -29,6 +29,10 @@
         <bundle start-level="30">mvn:org.bouncycastle/bctls-jdk18on/${bouncyCastleVersion}</bundle>
     </feature>
 
+    <feature name="bson" version="${bsonVersion}" description="Binary JSON Support">
+        <bundle dependency="true">mvn:org.mongodb/bson/${bsonVersion}</bundle>
+    </feature>
+
     <feature name="cassandra-driver" description="Datastax Cassandra Driver" version="${cassandraVersion}">
         <feature version="[${netty4Version},5)">netty4</feature>
         <feature version="[${jackson2Version},3)">jackson-core</feature>
