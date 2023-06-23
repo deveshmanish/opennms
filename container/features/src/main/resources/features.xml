@@ -144,10 +144,6 @@
         <bundle>wrap:mvn:org.hibernate/hibernate-validator-annotation-processor/4.1.0.Final</bundle>
         <bundle>wrap:mvn:org.hibernate/hibernate-validator/4.1.0.Final</bundle>
     </feature>
-    <feature name="java-native-access" version="${jnaVersion}" description="Java Native Access (JNA)">
-        <bundle>mvn:net.java.dev.jna/jna/${jnaVersion}</bundle>
-        <bundle>mvn:net.java.dev.jna/jna-platform/${jnaVersion}</bundle>
-    </feature>
     <feature name="jaxb" version="${eclipselinkVersion}" description="EclipseLink :: MOXy">
         <feature>javax.mail</feature>
         <bundle>mvn:org.eclipse.persistence/org.eclipse.persistence.moxy/${eclipselinkVersion}</bundle>
@@ -170,10 +166,9 @@
         <bundle>mvn:joda-time/joda-time/${jodaTimeVersion}</bundle>
     </feature>
     <feature name="jolokia-client" version="${jolokiaClientVersion}" description="Jolokia-Client">
+        <feature>httpclient</feature>
         <feature>javax.servlet</feature>
         <feature>json-simple</feature>
-        <bundle dependency="true">mvn:org.apache.httpcomponents/httpcore-osgi/${httpcoreVersion}</bundle>
-        <bundle dependency="true">mvn:org.apache.httpcomponents/httpclient-osgi/${httpclientVersion}</bundle>
         <bundle>mvn:org.jolokia/jolokia-client-java/${jolokiaClientVersion}</bundle>
     </feature>
     <feature name="jrobin" version="1.6.0" description="JRobin">
@@ -331,9 +326,8 @@
         <bundle>mvn:org.opennms.core/org.opennms.core.db/${project.version}</bundle>
     </feature>
     <feature name="opennms-core-web" version="${project.version}" description="OpenNMS :: Core :: Web">
+        <feature>httpclient</feature>
         <feature>opennms-core</feature>
-        <bundle>mvn:org.apache.httpcomponents/httpcore-osgi/${httpcoreVersion}</bundle>
-        <bundle>mvn:org.apache.httpcomponents/httpclient-osgi/${httpclientVersion}</bundle>
         <bundle>mvn:org.opennms.core/org.opennms.core.web/${project.version}</bundle>
     </feature>
     <feature name="opennms-distributed-core-api" version="${project.version}" description="OpenNMS :: Distributed :: Core :: API">
@@ -854,18 +848,16 @@
         <bundle>mvn:com.helger/dhcp4java/${dhcp4javaVersion}</bundle>
     </feature>
     <feature name="opennms-provisioning-shell" version="${project.version}" description="OpenNMS :: Provisioning :: Shell">
+        <feature>httpclient</feature>
         <bundle>mvn:org.opennms/opennms-provision-shell/${project.version}</bundle>
-        <bundle dependency="true">mvn:org.apache.httpcomponents/httpcore-osgi/${httpcoreVersion}</bundle>
-        <bundle dependency="true">mvn:org.apache.httpcomponents/httpclient-osgi/${httpclientVersion}</bundle>
     </feature>
     <feature name="opennms-vmware" version="${project.version}" description="OpenNMS :: Integrations :: VMware Integration">
         <feature>commons-cli</feature>
         <feature>commons-io</feature>
         <feature>commons-lang</feature>
         <feature>dom4j</feature>
+        <feature>httpclient</feature>
         <feature version="${guavaOsgiVersion}">guava</feature>
-        <bundle dependency="true">mvn:org.apache.httpcomponents/httpcore-osgi/${httpcoreVersion}</bundle>
-        <bundle dependency="true">mvn:org.apache.httpcomponents/httpclient-osgi/${httpclientVersion}</bundle>
         <bundle>wrap:mvn:com.toastcoders/yavijava/6.0.03</bundle>
         <bundle>wrap:mvn:org.sblim.slp/sblimSLPClient/1.17</bundle>
         <bundle>wrap:mvn:org.sblim.wbem/sblimCIMClient/1.17</bundle>
@@ -1023,9 +1015,9 @@
     </feature>
     <!-- Currently, this only runs on OpenNMS -->
     <feature name="opennms-telemetry-bmp-stats" version="${project.version}" description="OpenNMS :: Telemetry :: BMP :: Stats Aggregator">
-        <bundle>mvn:org.opennms.features.telemetry.protocols.bmp/org.opennms.features.telemetry.protocols.bmp.stats/${project.version}</bundle>
-        <bundle>mvn:com.google.code.gson/gson/${jestGsonVersion}</bundle>
         <feature>commons-net</feature>
+        <feature>jest</feature>
+        <bundle>mvn:org.opennms.features.telemetry.protocols.bmp/org.opennms.features.telemetry.protocols.bmp.stats/${project.version}</bundle>
     </feature>
     <feature name="opennms-telemetry-jti" start-level="${earlyStartLevel}" version="${project.version}" description="OpenNMS :: Telemetry :: JTI">
         <feature>opennms-telemetry-collection</feature>
@@ -1515,13 +1507,9 @@
         <feature>commons-codec</feature>
         <!-- TODO: what does it actually need? -->
         <feature>guava21</feature>
-        <bundle>mvn:com.google.code.gson/gson/${jestGsonVersion}</bundle>
-        <bundle>wrap:mvn:org.apache.httpcomponents/httpcore-nio/${httpcoreVersion}</bundle>
+        <feature>httpclient</feature>
+        <feature>jest</feature>
         <bundle>mvn:org.opennms.features.jest/org.opennms.features.jest.client/${project.version}</bundle>
-        <bundle>mvn:io.searchbox/jest-complete-osgi/${jestVersion}</bundle>
-        <bundle>mvn:org.apache.httpcomponents/httpcore-osgi/${httpcoreVersion}</bundle>
-        <bundle>mvn:org.apache.httpcomponents/httpclient-osgi/${httpclientVersion}</bundle>
-        <bundle>mvn:org.apache.httpcomponents/httpasyncclient-osgi/${httpasyncclientVersion}</bundle>
     </feature>
     <feature name="opennms-search" version="${project.version}" description="OpenNMS :: Features :: Search">
         <details>OpenNMS :: Features :: Search</details>

@@ -156,6 +156,21 @@
         <bundle>mvn:com.google.guava/guava/21.0</bundle>
     </feature>
 
+    <feature name="httpclient" version="${httpclientVersion}" description="Apache :: HTTP Components :: Client">
+        <bundle dependency="true">mvn:org.apache.httpcomponents/httpcore-osgi/${httpcoreVersion}</bundle>
+        <bundle dependency="true">mvn:org.apache.httpcomponents/httpclient-osgi/${httpclientVersion}</bundle>
+    </feature>
+
+    <feature name="httpclient-async" version="${httpasyncclientVersion}" description="Apache :: HTTP Components :: Client :: Async">
+        <feature>httpclient</feature>
+        <bundle dependency="true">mvn:org.apache.httpcomponents/httpasyncclient-osgi/${httpasyncclientVersion}</bundle>
+    </feature>
+
+    <feature name="httpclient-nio" version="${httpcoreVersion}" description="Apache :: HTTP Components :: Client :: NIO">
+        <feature>httpclient</feature>
+        <bundle dependency="true">wrap:mvn:org.apache.httpcomponents/httpcore-nio/${httpcoreVersion}</bundle>
+    </feature>
+
     <feature name="jackson1" version="${jackson1Version}" description="Jackson 1">
         <bundle dependency="true">mvn:org.codehaus.jackson/jackson-core-asl/${jacksonVersion}</bundle>
         <bundle dependency="true">mvn:org.codehaus.jackson/jackson-mapper-asl/${jacksonVersion}</bundle>
@@ -196,6 +211,11 @@
         <bundle dependency="true">mvn:com.fasterxml.jackson.datatype/jackson-datatype-jsr310/${jackson2Version}</bundle>
     </feature>
 
+    <feature name="java-native-access" version="${jnaVersion}" description="Java Native Access (JNA)">
+        <bundle dependency="true">mvn:net.java.dev.jna/jna/${jnaVersion}</bundle>
+        <bundle dependency="true">mvn:net.java.dev.jna/jna-platform/${jnaVersion}</bundle>
+    </feature>
+
     <feature name="javax.mail" version="${javaxMailVersion}" description="javax.mail">
         <bundle start-level="30" dependency="true">mvn:javax.mail/mail/${javaxMailVersion}</bundle>
     </feature>
@@ -206,6 +226,14 @@
 
     <feature name="javax.validation" version="1.0.0.GA" description="javax.validation">
         <bundle dependency="true">wrap:mvn:javax.validation/validation-api/1.0.0.GA$Bundle-SymbolicName=javax.validation:validation-api&amp;Bundle-Version=1.0.0&amp;Export-Package=javax.validation;version="1.0.0",javax.validation.bootstrap;version="1.0.0",javax.validation.constraints;version="1.0.0",javax.validation.groups;version="1.0.0",javax.validation.metadata;version="1.0.0",javax.validation.spi;version="1.0.0"</bundle>
+    </feature>
+
+    <feature name="jest" version="${jestVersion}" description="Jest Elasticsearch Java Client">
+        <feature>httpclient</feature>
+        <feature>httpclient-async</feature>
+        <feature>httpclient-nio</feature>
+        <bundle dependency="true">mvn:com.google.code.gson/gson/${jestGsonVersion}</bundle>
+        <bundle dependency="true">mvn:io.searchbox/jest-complete-osgi/${jestVersion}</bundle>
     </feature>
 
     <feature name="jetty" version="${jettyVersion}">
@@ -273,7 +301,7 @@
     </feature>
 
     <feature name="org.json" version="${jsonVersion}" description="org.json">
-        <bundle>wrap:mvn:org.json/json/${jsonVersion}$Export-Package=org.json</bundle>
+        <bundle dependency="true">wrap:mvn:org.json/json/${jsonVersion}$Export-Package=org.json</bundle>
     </feature>
 
     <feature name="snakeyaml" version="${snakeyamlVersion}" description="SnakeYAML">
@@ -291,19 +319,19 @@
     </feature>
 
     <feature name="scv-api" version="${project.version}" description="Secure Credentials Vault">
-        <bundle>mvn:org.opennms.features.scv/org.opennms.features.scv.api/${project.version}</bundle>
+        <bundle dependency="true">mvn:org.opennms.features.scv/org.opennms.features.scv.api/${project.version}</bundle>
     </feature>
 
     <feature name="scv-shell" version="${project.version}" description="Secure Credentials Vault Shell">
         <feature>scv-api</feature>
-        <bundle>mvn:org.opennms.features.scv/org.opennms.features.scv.shell/${project.version}</bundle>
+        <bundle dependency="true">mvn:org.opennms.features.scv/org.opennms.features.scv.shell/${project.version}</bundle>
     </feature>
 
     <feature name="scv-jceks-impl" version="${project.version}" description="Secure Credentials Vault JCEKS Impl">
         <feature>commons-codec</feature>
         <feature version="${guavaOsgiVersion}" prerequisite="true">guava</feature>
         <feature>scv-api</feature>
-        <bundle>mvn:org.opennms.features.scv/org.opennms.features.scv.jceks-impl/${project.version}</bundle>
+        <bundle dependency="true">mvn:org.opennms.features.scv/org.opennms.features.scv.jceks-impl/${project.version}</bundle>
     </feature>
 
     <!-- override the default Karaf ssh with a version from a newer release -->
