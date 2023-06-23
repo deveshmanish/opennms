@@ -34,9 +34,9 @@
     </feature>
 
     <feature name="cassandra-driver" description="Datastax Cassandra Driver" version="${cassandraVersion}">
+        <feature>dropwizard-metrics</feature>
         <feature version="[${netty4Version},5)">netty4</feature>
         <feature version="[${jackson2Version},3)">jackson-core</feature>
-        <bundle dependency="true">mvn:io.dropwizard.metrics/metrics-core/4.2.10</bundle>
         <bundle dependency="true">mvn:com.datastax.oss/java-driver-core/${cassandraVersion}</bundle>
         <bundle dependency="true">mvn:com.datastax.oss/native-protocol/1.5.1</bundle>
         <bundle dependency="true">mvn:com.datastax.oss/java-driver-shaded-guava/25.1-jre-graal-sub-1</bundle>
@@ -124,6 +124,18 @@
         <bundle dependency="true">mvn:org.apache.commons/commons-pool2/${commonsPool2Version}</bundle>
     </feature>
 
+    <feature name="dropwizard-metrics" version="${dropwizardMetricsVersion}" description="Dropwizard :: Metrics">
+        <bundle dependency="true">mvn:io.dropwizard.metrics/metrics-core/${dropwizardMetricsVersion}</bundle>
+        <bundle dependency="true">mvn:io.dropwizard.metrics/metrics-jmx/${dropwizardMetricsVersion}</bundle>
+    </feature>
+
+    <feature name="fst" description="FST" version="${fstVersion}">
+        <feature>jackson-core</feature>
+        <bundle dependency="true">mvn:org.javassist/javassist/${javassistVersion}</bundle>
+        <bundle dependency="true">mvn:org.objenesis/objenesis/${objenesisVersion}</bundle>
+        <bundle dependency="true">mvn:de.ruedigermoeller/fst/${fstVersion}</bundle>
+    </feature>
+
     <feature name="guava" version="${guavaOsgiVersion}" description="Google :: Guava">
         <feature prerequisite="true">wrap</feature>
         <bundle start-level="30" dependency="true">mvn:com.google.guava/guava/${guavaVersion}</bundle>
@@ -134,10 +146,12 @@
         <bundle start-level="30" dependency="true">wrap:mvn:com.google.j2objc/j2objc-annotations/1.1</bundle>
     </feature>
 
+    <!-- don't rely on dependency="true" for things that want specific versions -->
     <feature name="guava17" version="17.0" description="Google :: Guava">
         <bundle>mvn:com.google.guava/guava/17.0</bundle>
     </feature>
 
+    <!-- don't rely on dependency="true" for things that want specific versions -->
     <feature name="guava21" version="21.0" description="Google :: Guava">
         <bundle>mvn:com.google.guava/guava/21.0</bundle>
     </feature>
