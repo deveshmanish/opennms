@@ -279,53 +279,38 @@ public abstract class AbstractOpenNMSSeleniumHelper {
         }
     }
 
+    /**
+     * Standard login for smoke tests.
+     */
     public void login() {
+        login(BASIC_AUTH_USERNAME, BASIC_AUTH_PASSWORD, true, true);
+    }
+
+    public void login(final String username, final String password, final boolean doSkip, final boolean closeUsageStatsSharing) {
         getDriver().get(getBaseUrlInternal() + "opennms/login.jsp");
 
         waitForLogin();
 
-        enterText(By.name("j_username"), BASIC_AUTH_USERNAME);
-        enterText(By.name("j_password"), BASIC_AUTH_PASSWORD);
+        enterText(By.name("j_username"), username);
+        enterText(By.name("j_password"), password);
         clickElement(By.name("Login"));
 
         wait.until((WebDriver driver) -> {
             return ! driver.getCurrentUrl().contains("login.jsp");
         });
 
+        // bootstrap header, exists in all JSP-based OpenNMS pages
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[@id='content']")));
 
-        invokeWithImplicitWait(0, () -> {
-            try {
-                // Make sure that the 'login-attempt-failed' element is not present
-                findElementById("login-attempt-failed");
-                fail("Login failed: " + findElementById("login-attempt-failed-reason").getText());
-            } catch (NoSuchElementException e) {
-                // This is expected
-            }
-        });
+        ensureLoginSuccess();
 
-        // login with "admin/admin" will result in the passwordGate page, click "Skip" to continue
-        if (BASIC_AUTH_USERNAME.equals(PASSWORD_GATE_USERNAME) && BASIC_AUTH_PASSWORD.equals(PASSWORD_GATE_PASSWORD)) {
-            clickElement(By.id("btn_skip"));
-
-            wait.until((WebDriver driver) -> {
-                return !driver.getCurrentUrl().contains("passwordGate.jsp");
-            });
+        if (doSkip) {
+            skipPasswordGate(username, password);
         }
 
-        // close the Usage Statistics Sharing dialog if present
-        invokeWithImplicitWait(0, () -> {
-            try {
-                WebElement element = findElementById("usage-statistics-sharing-modal");
-
-                if (element.isDisplayed()) { // usage statistics modal is visible
-                    findElementById("usage-statistics-sharing-notice-dismiss").click(); // close modal
-                }
-            } catch (NoSuchElementException e) {
-                // "usage-statistics-sharing-notice-dismiss" is not visible or does not exist.
-                // No further action required
-            }
-        });
+        if (closeUsageStatsSharing) {
+            closeUsageStatisticsSharingDialog();
+        }
     }
 
     private void invokeWithImplicitWait(int implicitWait, Runnable runnable) {
@@ -363,6 +348,50 @@ public abstract class AbstractOpenNMSSeleniumHelper {
     public void clearElement(final By by) {
         sleepQuietly(200);
         waitForElement(by).clear();
+    }
+
+    protected void ensureLoginSuccess() {
+        invokeWithImplicitWait(0, () -> {
+            try {
+                // Make sure that the 'login-attempt-failed' element is not present
+                findElementById("login-attempt-failed");
+                fail("Login failed: " + findElementById("login-attempt-failed-reason").getText());
+            } catch (NoSuchElementException e) {
+                // This is expected
+            }
+        });
+    }
+
+    /**
+     * Logging in with "admin/admin" will result in navigating to the passwordGate page,
+     * this clicks "Skip" to continue.
+     */
+    protected void skipPasswordGate(final String username, final String password) {
+        if (username.equals(PASSWORD_GATE_USERNAME) && password.equals(PASSWORD_GATE_PASSWORD)) {
+            clickElement(By.id("btn_skip"));
+
+            wait.until((WebDriver driver) -> {
+                return !driver.getCurrentUrl().contains("passwordGate.jsp");
+            });
+        }
+    }
+
+    /**
+     * Close the Usage Statistics Sharing dialog if present.
+     */
+    protected void closeUsageStatisticsSharingDialog() {
+        invokeWithImplicitWait(0, () -> {
+            try {
+                WebElement element = findElementById("usage-statistics-sharing-modal");
+
+                if (element.isDisplayed()) { // usage statistics modal is visible
+                    findElementById("usage-statistics-sharing-notice-dismiss").click(); // close modal
+                }
+            } catch (NoSuchElementException e) {
+                // "usage-statistics-sharing-notice-dismiss" is not visible or does not exist.
+                // No further action required
+            }
+        });
     }
 
     public void assertElementDoesNotExist(final By by) {
@@ -427,7 +456,7 @@ public abstract class AbstractOpenNMSSeleniumHelper {
     }
 
     protected String handleAlert(final String expectedText) {
-        LOG.debug("handleAlerm: expectedText={}", expectedText);
+        LOG.debug("handleAlert: expectedText={}", expectedText);
         try {
             final Alert alert = getDriver().switchTo().alert();
             final String alertText = alert.getText();
