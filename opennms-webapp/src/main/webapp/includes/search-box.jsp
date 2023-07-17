@@ -3,7 +3,7 @@
         session="true"
 %>
 
-<div id="onms-search">
+<div id="onms-search" ngapp="onms.default.apps">
 
   <div class="card">
     <div class="card-header">
