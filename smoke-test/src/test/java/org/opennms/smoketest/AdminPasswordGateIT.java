@@ -50,7 +50,23 @@ import org.slf4j.LoggerFactory;
 public class AdminPasswordGateIT extends OpenNMSSeleniumIT {
     private static final Logger LOG = LoggerFactory.getLogger(AdminPasswordGateIT.class);
 
-    private static final String NEW_ADMIN_PASSWORD = "Admin!admin1";
+    private static final String ALTERNATE_ADMIN_PASSWORD = "Admin!admin1";
+
+    private boolean loginUsesAlternatePassword = false;
+
+    /**
+     * Used to override the login in the AbstractOpenNMSSeleniumHelper.m_watcher JUnit Rule.
+     */
+    @Override
+    public void doTestWatcherLogin() {
+        if (loginUsesAlternatePassword) {
+            LOG.info("DEBUG in AdminPasswordGateIT.doTestWatcherLogin, loginUsesAlternatePassword is true");
+            login(PASSWORD_GATE_USERNAME, ALTERNATE_ADMIN_PASSWORD, false, false);
+        } else {
+            LOG.info("DEBUG in AdminPasswordGateIT.doTestWatcherLogin, loginUsesAlternatePassword is false");
+            login();
+        }
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -78,13 +94,12 @@ public class AdminPasswordGateIT extends OpenNMSSeleniumIT {
 
         LOG.info("DEBUG on passwordGate page");
 
-
         // TODO: Login as "admin1" and get password complexity failure alert
 
         // Change the admin password
         enterText(By.name("oldpass"), PASSWORD_GATE_PASSWORD);
-        enterText(By.name("pass1"), NEW_ADMIN_PASSWORD);
-        enterText(By.name("pass2"), NEW_ADMIN_PASSWORD);
+        enterText(By.name("pass1"), ALTERNATE_ADMIN_PASSWORD);
+        enterText(By.name("pass2"), ALTERNATE_ADMIN_PASSWORD);
         clickElement(By.name("btn_change_password"));
 
         wait.until((WebDriver driver) -> {
@@ -94,8 +109,12 @@ public class AdminPasswordGateIT extends OpenNMSSeleniumIT {
         final WebElement element = findElementByXpath("//h3[contains(@class, 'alert-success') and text()='Password successfully changed.']");
         assertNotNull(element);
 
-        // logout so we can test login in next test
-        logout();
+        // password was changed, set this so that the TestWatcher rule uses this password in its login
+        // before running the next test method below
+        loginUsesAlternatePassword = true;
+
+        //// logout so we can test login in next test
+        //logout();
     }
 
     /**
@@ -107,7 +126,10 @@ public class AdminPasswordGateIT extends OpenNMSSeleniumIT {
         LOG.info("DEBUG in test_02_LoginWithNewPasswordAndReset");
 
         // login with "admin/newPassword", should go directly to main page
-        login(PASSWORD_GATE_USERNAME, NEW_ADMIN_PASSWORD, true, true);
+        //LOG.info("DEBUG logging out");
+        //logout();
+        LOG.info("DEBUG logging in with NEW_ADMIN_PASSWORD");
+        login(PASSWORD_GATE_USERNAME, ALTERNATE_ADMIN_PASSWORD, true, true);
 
         LOG.info("DEBUG logged in as admin/newPassword");
 
@@ -129,11 +151,14 @@ public class AdminPasswordGateIT extends OpenNMSSeleniumIT {
 
         try {
             sendPut(url, body);
+            LOG.info("DEBUG reset password to 'admin' via Rest API succeeded");
         } catch (Exception e) {
             fail("Failed to reset password to 'admin': " + e.getMessage());
         }
 
-        logout();
+        LOG.info("DEBUG setting loginUsesAlternatePassword to false");
+        loginUsesAlternatePassword = false;
+        //logout();
     }
 
     /**
@@ -144,6 +169,9 @@ public class AdminPasswordGateIT extends OpenNMSSeleniumIT {
         LOG.info("DEBUG in test_03_LoginWithDefaultPassword");
 
         // login with "admin/admin", should succeed but display passwordGate page, which is skipped
+        //LOG.info("DEBUG logging out");
+        //logout();
+        LOG.info("DEBUG logging in with admin/admin");
         login(PASSWORD_GATE_USERNAME, PASSWORD_GATE_PASSWORD, true, true);
 
         LOG.info("DEBUG logged in");

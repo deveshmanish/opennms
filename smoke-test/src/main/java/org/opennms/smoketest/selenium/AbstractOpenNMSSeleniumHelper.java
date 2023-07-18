@@ -142,6 +142,14 @@ public abstract class AbstractOpenNMSSeleniumHelper {
     public abstract String getBaseUrlInternal();
     public abstract String getBaseUrlExternal();
 
+    /**
+     * Allows subclasses to override the login used by the m_watcher TestWatcher Rule below.
+     * See AdminPasswordGateIT.java for an example.
+     */
+    public void doTestWatcherLogin() {
+        login();
+    }
+
     @Rule
     public TestWatcher m_watcher = new TestWatcher() {
         @Override
@@ -157,7 +165,8 @@ public abstract class AbstractOpenNMSSeleniumHelper {
             wait = new WebDriverWait(getDriver(), Duration.ofMillis(LOAD_TIMEOUT));
             requisitionWait = new WebDriverWait(getDriver(), Duration.ofMillis(REQ_TIMEOUT));
 
-            login();
+            //login();
+            doTestWatcherLogin();
 
             // make sure everything's in a good state if possible
             cleanUp();
