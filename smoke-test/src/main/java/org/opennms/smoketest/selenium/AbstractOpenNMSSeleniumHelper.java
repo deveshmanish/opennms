@@ -147,6 +147,7 @@ public abstract class AbstractOpenNMSSeleniumHelper {
      * See AdminPasswordGateIT.java for an example.
      */
     public void doTestWatcherLogin() {
+        LOG.debug("DEBUG in AbstractOpenNMSSeleniumHelper.doTestWatcherLogin, doing base login()");
         login();
     }
 
@@ -176,10 +177,12 @@ public abstract class AbstractOpenNMSSeleniumHelper {
         protected void failed(final Throwable e, final Description description) {
             final String testName = description.getMethodName();
             final WebDriver driver = getDriver();
+
             if (driver == null) {
                 LOG.warn("Test {} failed... no web driver was set.", testName);
                 return;
             }
+
             LOG.debug("Test {} failed... attempting to take screenshot.", testName);
 
             // Reset the implicit wait since we can't trust the last value
@@ -187,10 +190,12 @@ public abstract class AbstractOpenNMSSeleniumHelper {
 
             if (driver instanceof TakesScreenshot) {
                 final TakesScreenshot shot = (TakesScreenshot)driver;
+
                 try {
                     final Path from = shot.getScreenshotAs(OutputType.FILE).toPath();
                     final Path to = Paths.get("target", "screenshots", description.getClassName() + "." + testName + ".png");
                     LOG.debug("Screenshot saved to: {}", from);
+
                     try {
                         Files.createDirectories(to.getParent());
                         Files.move(from, to, StandardCopyOption.REPLACE_EXISTING);
@@ -204,10 +209,12 @@ public abstract class AbstractOpenNMSSeleniumHelper {
             } else {
                 LOG.debug("Driver can't take screenshots.");
             }
+
             try {
                 LOG.debug("Attempting to dump DOM.");
                 final String domText = driver.findElement(By.tagName("html")).getAttribute("innerHTML");
                 final Path to = Paths.get("target", "contents", description.getClassName() + "." + testName + ".html");
+
                 try {
                     Files.createDirectories(to.getParent());
                     Files.write(to, domText.getBytes(StandardCharsets.UTF_8));

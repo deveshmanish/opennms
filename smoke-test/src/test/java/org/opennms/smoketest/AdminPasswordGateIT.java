@@ -36,6 +36,7 @@ import org.junit.Before;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.TestInstance;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -45,7 +46,10 @@ import org.slf4j.LoggerFactory;
 /**
  * Tests the Admin Password Gate functionality, when user enters the default 'admin' password.
  * Tests must be run in order since we are modifying, then resetting, the password used in all other tests.
+ * Using TestInstance.Lifecycle.PER_CLASS because we need to retain the value of loginUsesAlternatePassword
+ * between test methods.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class AdminPasswordGateIT extends OpenNMSSeleniumIT {
     private static final Logger LOG = LoggerFactory.getLogger(AdminPasswordGateIT.class);
@@ -59,6 +63,8 @@ public class AdminPasswordGateIT extends OpenNMSSeleniumIT {
      */
     @Override
     public void doTestWatcherLogin() {
+        LOG.debug("DEBUG in AdminPasswordGateIT.doTestWatcherLogin...");
+
         if (loginUsesAlternatePassword) {
             LOG.info("DEBUG in AdminPasswordGateIT.doTestWatcherLogin, loginUsesAlternatePassword is true");
             login(PASSWORD_GATE_USERNAME, ALTERNATE_ADMIN_PASSWORD, false, false);
@@ -128,7 +134,7 @@ public class AdminPasswordGateIT extends OpenNMSSeleniumIT {
         // login with "admin/newPassword", should go directly to main page
         //LOG.info("DEBUG logging out");
         //logout();
-        LOG.info("DEBUG logging in with NEW_ADMIN_PASSWORD");
+        LOG.info("DEBUG logging in with ALTERNATE_ADMIN_PASSWORD");
         login(PASSWORD_GATE_USERNAME, ALTERNATE_ADMIN_PASSWORD, true, true);
 
         LOG.info("DEBUG logged in as admin/newPassword");
@@ -137,9 +143,13 @@ public class AdminPasswordGateIT extends OpenNMSSeleniumIT {
 
         LOG.info("DEBUG on main page");
 
-        getDriver().findElement(By.id("index-contentmiddle"));
+        final WebElement contentMiddleEl = getDriver().findElement(By.id("index-contentmiddle"));
+        assertNotNull(contentMiddleEl);
+        LOG.info("DEBUG found index-contentmiddle");
+
         final WebElement element = findElementByXpath("//div[contains(@class, 'card-header')]//span[text()='Status Overview']");
         assertNotNull(element);
+        LOG.info("DEBUG found Status Overview");
 
         LOG.info("DEBUG verified on main page");
 
@@ -156,7 +166,7 @@ public class AdminPasswordGateIT extends OpenNMSSeleniumIT {
             fail("Failed to reset password to 'admin': " + e.getMessage());
         }
 
-        LOG.info("DEBUG setting loginUsesAlternatePassword to false");
+        LOG.info("DEBUG setting loginUsesAlternatePassword back to false");
         loginUsesAlternatePassword = false;
         //logout();
     }
@@ -178,6 +188,6 @@ public class AdminPasswordGateIT extends OpenNMSSeleniumIT {
 
         assertTrue(driver.getCurrentUrl().contains("index.jsp"));
 
-        LOG.info("DEBUG logged in appears to be successful with redirect to main page");
+        LOG.info("DEBUG login appears to be successful with redirect to main page");
     }
 }
