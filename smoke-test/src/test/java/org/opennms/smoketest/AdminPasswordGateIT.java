@@ -86,8 +86,9 @@ public class AdminPasswordGateIT extends OpenNMSSeleniumIT {
      * Logout to be ready for next test.
      */
     @Test
-    public void test_01_AdminPasswordGateChangePassword() {
-        LOG.info("DEBUG in test_01_AdminPasswordGateChangePassword");
+    public void test_00_AdminPasswordGateChangePasswordComplete() {
+        LOG.info("DEBUG in test_00_AdminPasswordGateChangePasswordComplete");
+        LOG.info("DEBUG Part A");
 
         // login with "admin/admin", do not skip past the password gate
         login(PASSWORD_GATE_USERNAME, PASSWORD_GATE_PASSWORD, false, false);
@@ -95,7 +96,7 @@ public class AdminPasswordGateIT extends OpenNMSSeleniumIT {
         LOG.info("DEBUG logged in as admin/admin");
 
         if (!driver.getCurrentUrl().contains("passwordGate.jsp")) {
-           fail("Failed to get password gate page after 'admin/admin' login attempt.");
+            fail("Failed to get password gate page after 'admin/admin' login attempt.");
         }
 
         LOG.info("DEBUG on passwordGate page");
@@ -121,15 +122,11 @@ public class AdminPasswordGateIT extends OpenNMSSeleniumIT {
 
         //// logout so we can test login in next test
         //logout();
-    }
 
-    /**
-     * Login with new password, verify password gate page not displayed.
-     * Make Rest API call to reset password back to 'admin'.
-     */
-    @Test
-    public void test_02_LoginWithNewPasswordAndReset() {
-        LOG.info("DEBUG in test_02_LoginWithNewPasswordAndReset");
+        LOG.info("DEBUG Part B");
+        LOG.info("DEBUG Logging out...");
+
+        logout();
 
         // login with "admin/newPassword", should go directly to main page
         //LOG.info("DEBUG logging out");
@@ -143,12 +140,12 @@ public class AdminPasswordGateIT extends OpenNMSSeleniumIT {
 
         LOG.info("DEBUG on main page");
 
-        final WebElement contentMiddleEl = getDriver().findElement(By.id("index-contentmiddle"));
-        assertNotNull(contentMiddleEl);
+        final WebElement contentMiddleElement = getDriver().findElement(By.id("index-contentmiddle"));
+        assertNotNull(contentMiddleElement);
         LOG.info("DEBUG found index-contentmiddle");
 
-        final WebElement element = findElementByXpath("//div[contains(@class, 'card-header')]//span[text()='Status Overview']");
-        assertNotNull(element);
+        final WebElement statusOverviewElement = findElementByXpath("//div[contains(@class, 'card-header')]//span[text()='Status Overview']");
+        assertNotNull(statusOverviewElement);
         LOG.info("DEBUG found Status Overview");
 
         LOG.info("DEBUG verified on main page");
@@ -168,15 +165,10 @@ public class AdminPasswordGateIT extends OpenNMSSeleniumIT {
 
         LOG.info("DEBUG setting loginUsesAlternatePassword back to false");
         loginUsesAlternatePassword = false;
-        //logout();
-    }
 
-    /**
-     * Verify user can log in with default "admin" username/password.
-     */
-    @Test
-    public void test_03_LoginWithDefaultPassword() {
-        LOG.info("DEBUG in test_03_LoginWithDefaultPassword");
+        LOG.info("DEBUG Part C");
+
+        //LOG.info("DEBUG in test_03_LoginWithDefaultPassword");
 
         // login with "admin/admin", should succeed but display passwordGate page, which is skipped
         //LOG.info("DEBUG logging out");
@@ -190,4 +182,118 @@ public class AdminPasswordGateIT extends OpenNMSSeleniumIT {
 
         LOG.info("DEBUG login appears to be successful with redirect to main page");
     }
+
+
+
+//    /**
+//     * Test logging in as "admin/admin", then getting the Password Change gate.
+//     * Change the admin password to something else, confirm user reaches the password change
+//     * successful page.
+//     * Logout to be ready for next test.
+//     */
+//    @Test
+//    public void test_01_AdminPasswordGateChangePassword() {
+//        LOG.info("DEBUG in test_01_AdminPasswordGateChangePassword");
+//
+//        // login with "admin/admin", do not skip past the password gate
+//        login(PASSWORD_GATE_USERNAME, PASSWORD_GATE_PASSWORD, false, false);
+//
+//        LOG.info("DEBUG logged in as admin/admin");
+//
+//        if (!driver.getCurrentUrl().contains("passwordGate.jsp")) {
+//           fail("Failed to get password gate page after 'admin/admin' login attempt.");
+//        }
+//
+//        LOG.info("DEBUG on passwordGate page");
+//
+//        // TODO: Login as "admin1" and get password complexity failure alert
+//
+//        // Change the admin password
+//        enterText(By.name("oldpass"), PASSWORD_GATE_PASSWORD);
+//        enterText(By.name("pass1"), ALTERNATE_ADMIN_PASSWORD);
+//        enterText(By.name("pass2"), ALTERNATE_ADMIN_PASSWORD);
+//        clickElement(By.name("btn_change_password"));
+//
+//        wait.until((WebDriver driver) -> {
+//            return driver.getCurrentUrl().contains("passwordGateAction");
+//        });
+//
+//        final WebElement element = findElementByXpath("//h3[contains(@class, 'alert-success') and text()='Password successfully changed.']");
+//        assertNotNull(element);
+//
+//        // password was changed, set this so that the TestWatcher rule uses this password in its login
+//        // before running the next test method below
+//        loginUsesAlternatePassword = true;
+//
+//        //// logout so we can test login in next test
+//        //logout();
+//    }
+//
+//    /**
+//     * Login with new password, verify password gate page not displayed.
+//     * Make Rest API call to reset password back to 'admin'.
+//     */
+//    @Test
+//    public void test_02_LoginWithNewPasswordAndReset() {
+//        LOG.info("DEBUG in test_02_LoginWithNewPasswordAndReset");
+//
+//        // login with "admin/newPassword", should go directly to main page
+//        //LOG.info("DEBUG logging out");
+//        //logout();
+//        LOG.info("DEBUG logging in with ALTERNATE_ADMIN_PASSWORD");
+//        login(PASSWORD_GATE_USERNAME, ALTERNATE_ADMIN_PASSWORD, true, true);
+//
+//        LOG.info("DEBUG logged in as admin/newPassword");
+//
+//        assertTrue(driver.getCurrentUrl().contains("index.jsp"));
+//
+//        LOG.info("DEBUG on main page");
+//
+//        final WebElement contentMiddleEl = getDriver().findElement(By.id("index-contentmiddle"));
+//        assertNotNull(contentMiddleEl);
+//        LOG.info("DEBUG found index-contentmiddle");
+//
+//        final WebElement element = findElementByXpath("//div[contains(@class, 'card-header')]//span[text()='Status Overview']");
+//        assertNotNull(element);
+//        LOG.info("DEBUG found Status Overview");
+//
+//        LOG.info("DEBUG verified on main page");
+//
+//        // Now reset password back to "admin" using Rest API
+//        LOG.info("DEBUG about to reset password to 'admin' via Rest API");
+//
+//        final String url = getBaseUrlInternal() + "opennms/rest/users/admin";
+//        final String body = "password=admin&hashPassword=true";
+//
+//        try {
+//            sendPut(url, body);
+//            LOG.info("DEBUG reset password to 'admin' via Rest API succeeded");
+//        } catch (Exception e) {
+//            fail("Failed to reset password to 'admin': " + e.getMessage());
+//        }
+//
+//        LOG.info("DEBUG setting loginUsesAlternatePassword back to false");
+//        loginUsesAlternatePassword = false;
+//        //logout();
+//    }
+//
+//    /**
+//     * Verify user can log in with default "admin" username/password.
+//     */
+//    @Test
+//    public void test_03_LoginWithDefaultPassword() {
+//        LOG.info("DEBUG in test_03_LoginWithDefaultPassword");
+//
+//        // login with "admin/admin", should succeed but display passwordGate page, which is skipped
+//        //LOG.info("DEBUG logging out");
+//        //logout();
+//        LOG.info("DEBUG logging in with admin/admin");
+//        login(PASSWORD_GATE_USERNAME, PASSWORD_GATE_PASSWORD, true, true);
+//
+//        LOG.info("DEBUG logged in");
+//
+//        assertTrue(driver.getCurrentUrl().contains("index.jsp"));
+//
+//        LOG.info("DEBUG login appears to be successful with redirect to main page");
+//    }
 }
