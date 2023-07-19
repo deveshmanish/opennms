@@ -44,7 +44,6 @@
   org.opennms.web.admin.discovery.DiscoveryServletConstants,
   org.opennms.web.admin.discovery.DiscoveryScanServlet"
 %>
-<%@ page import="org.opennms.core.utils.WebSecurityUtils" %>
 <%
 	response.setDateHeader("Expires", 0);
 	response.setHeader("Pragma", "no-cache");
@@ -223,7 +222,7 @@ for (Requisition requisition : reqAccessService.getRequisitions()) {
                 <select id="foreignsource" class="form-control custom-select col-md-8" name="foreignsource">
                     <option value="" <%if (!currConfig.getForeignSource().isPresent()) out.print("selected");%>>None selected</option>
                     <% for (String key : foreignsources.keySet()) { %>
-                    <option value="<%=WebSecurityUtils.sanitizeString(key)%>" <%if(key.equals(currConfig.getForeignSource().orElse(null))) out.print("selected");%>><%=WebSecurityUtils.sanitizeString(foreignsources.get(key))%></option>
+                    <option value="<%=key%>" <%if(key.equals(currConfig.getForeignSource().orElse(null))) out.print("selected");%>><%=foreignsources.get(key)%></option>
                     <% } %>
                 </select>
             </div> <!-- form-group -->
@@ -231,7 +230,7 @@ for (Requisition requisition : reqAccessService.getRequisitions()) {
                 <label for="location" class="col-form-label col-md-4">Location</label>
                 <select id="location" class="form-control custom-select col-md-8" name="location">
                     <% for (String key : locations.keySet()) { %>
-                    <option value="<%=WebSecurityUtils.sanitizeString(key)%>" <%if(key.equals(currConfig.getLocation().orElse(MonitoringLocationDao.DEFAULT_MONITORING_LOCATION_ID))) out.print("selected");%>><%=WebSecurityUtils.sanitizeString(locations.get(key))%></option>
+                    <option value="<%=key%>" <%if(key.equals(currConfig.getLocation().orElse(MonitoringLocationDao.DEFAULT_MONITORING_LOCATION_ID))) out.print("selected");%>><%=locations.get(key)%></option>
                     <% } %>
                 </select>
             </div> <!-- form-group -->

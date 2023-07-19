@@ -35,7 +35,6 @@
 		org.opennms.netmgt.model.monitoringLocations.OnmsMonitoringLocation"%>
 
 <%@ page import="com.google.common.base.Strings" %>
-<%@ page import="org.opennms.core.utils.WebSecurityUtils" %>
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="element" tagdir="/WEB-INF/tags/element" %>
@@ -107,11 +106,11 @@
         for (OnmsMonitoringLocation monitoringLocation : monitoringLocations) {
           if (selectedMonitoringLocation.equals(monitoringLocation.getLocationName())) {
       %>
-      <option value="<%=WebSecurityUtils.sanitizeString(monitoringLocation.getLocationName())%>" selected><%=WebSecurityUtils.sanitizeString(monitoringLocation.getLocationName())%></option>
+      <option value="<%=monitoringLocation.getLocationName()%>" selected><%=monitoringLocation.getLocationName()%></option>
       <%
       } else {
       %>
-      <option value="<%=WebSecurityUtils.sanitizeString(monitoringLocation.getLocationName())%>"><%=WebSecurityUtils.sanitizeString(monitoringLocation.getLocationName())%></option>
+      <option value="<%=monitoringLocation.getLocationName()%>"><%=monitoringLocation.getLocationName()%></option>
       <%
           }
         }
